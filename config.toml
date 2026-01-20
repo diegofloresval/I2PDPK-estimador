@@ -1,0 +1,8 @@
+[server]
+headless = true
+
+[runner]
+fastReruns = false
+
+[python]
+version = "3.11"
