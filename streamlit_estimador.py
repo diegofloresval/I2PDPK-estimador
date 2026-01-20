@@ -214,12 +214,21 @@ class EstimadorDiecisiete:
 
 @st.cache_resource
 def cargar_estimador():
-    """Carga el estimador desde el archivo pickle."""
+    """Carga el estimador desde CSV histórico."""
     try:
-        with open('estimador_diecisiete.pkl', 'rb') as f:
-            return pickle.load(f)
+        # Leer dataset histórico
+        df_historico = pd.read_csv('historico_bugs.csv')
+        
+        # Crear estimador
+        estimador = EstimadorDiecisiete(df_historico)
+        return estimador
+        
     except FileNotFoundError:
-        st.error("⚠️ Archivo estimador_diecisiete.pkl no encontrado")
+        st.error("⚠️ Archivo historico_bugs.csv no encontrado")
+        st.info("Archivos disponibles: " + str(Path('.').glob('*')))
+        st.stop()
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
         st.stop()
 
 estimador = cargar_estimador()
