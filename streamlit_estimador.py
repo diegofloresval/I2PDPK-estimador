@@ -251,8 +251,10 @@ st.markdown("""
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("📋 Información del Bug")
-    
+    st.markdown('<div class="corporate-card">', unsafe_allow_html=True)
+
+    st.subheader("📄 Información del Bug")
+
     # Cliente
     clientes = sorted(estimador.stats_cliente.keys())
     cliente = st.selectbox(
@@ -260,7 +262,7 @@ with col1:
         options=clientes,
         help="Selecciona el cliente afectado"
     )
-    
+
     # Resumen
     summary = st.text_input(
         "Resumen del bug *",
@@ -268,15 +270,20 @@ with col1:
         help="Breve descripción del problema"
     )
 
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
 with col2:
+    st.markdown('<div class="corporate-card">', unsafe_allow_html=True)
+
     st.subheader("📝 Descripción Detallada")
-    
-    description = st.text_area(
+
+    descripcion = st.text_area(
         "Descripción (opcional)",
-        height=150,
-        placeholder="Pasos para reproducir, comportamiento esperado, screenshots...",
-        help="Información adicional sobre el bug"
+        placeholder="Detallar pasos, contexto y comportamiento observado"
     )
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Botón estimar
 st.markdown("---")
