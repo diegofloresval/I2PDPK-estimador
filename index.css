@@ -1,0 +1,320 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Payroll 17 Corporate Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Corporate Payroll 17 Colors */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 20%;
+
+    /* Corporate Navy Blue */
+    --primary: 213 50% 23%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 25% 20%;
+
+    --muted: 210 15% 94%;
+    --muted-foreground: 215 15% 50%;
+
+    --accent: 213 50% 23%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Section Accent Colors */
+    --accent-blue: 213 70% 50%;
+    --accent-blue-soft: 213 60% 96%;
+    --accent-teal: 180 50% 40%;
+    --accent-teal-soft: 180 40% 95%;
+    --accent-purple: 260 50% 50%;
+    --accent-purple-soft: 260 40% 96%;
+    --accent-amber: 38 90% 50%;
+    --accent-amber-soft: 38 70% 95%;
+
+    /* Success Green for confidence indicators */
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 142 60% 95%;
+
+    /* Warning/Info */
+    --info: 213 80% 55%;
+    --info-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 213 50% 23%;
+
+    --radius: 0.375rem;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(215 25% 20% / 0.05);
+    --shadow-card: 0 1px 3px 0 hsl(215 25% 20% / 0.08), 0 1px 2px -1px hsl(215 25% 20% / 0.08);
+    --shadow-md: 0 4px 6px -1px hsl(215 25% 20% / 0.08), 0 2px 4px -2px hsl(215 25% 20% / 0.06);
+
+    /* Header accent line */
+    --header-accent: 213 80% 45%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 215 25% 12%;
+    --foreground: 210 20% 98%;
+
+    --card: 215 25% 15%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 215 25% 15%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 213 70% 60%;
+    --primary-foreground: 215 25% 10%;
+
+    --secondary: 215 20% 20%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 215 20% 20%;
+    --muted-foreground: 215 15% 60%;
+
+    --accent: 213 70% 60%;
+    --accent-foreground: 215 25% 10%;
+
+    --accent-blue: 213 70% 60%;
+    --accent-blue-soft: 213 40% 20%;
+    --accent-teal: 180 50% 50%;
+    --accent-teal-soft: 180 30% 20%;
+    --accent-purple: 260 50% 60%;
+    --accent-purple-soft: 260 30% 20%;
+    --accent-amber: 38 80% 55%;
+    --accent-amber-soft: 38 40% 20%;
+
+    --success: 142 70% 50%;
+    --success-foreground: 142 70% 10%;
+    --success-soft: 142 40% 20%;
+
+    --info: 213 80% 60%;
+    --info-foreground: 213 80% 10%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 215 20% 25%;
+    --input: 215 20% 25%;
+    --ring: 213 70% 60%;
+
+    --header-accent: 213 80% 55%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-foreground;
+  }
+}
+
+@layer components {
+  /* Base Card */
+  .corporate-card {
+    @apply bg-card rounded-md border border-border p-6;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Accent Card Variants */
+  .corporate-card-blue {
+    @apply corporate-card relative overflow-hidden;
+    border-top: 3px solid hsl(var(--accent-blue));
+  }
+
+  .corporate-card-teal {
+    @apply corporate-card relative overflow-hidden;
+    border-top: 3px solid hsl(var(--accent-teal));
+  }
+
+  .corporate-card-purple {
+    @apply corporate-card relative overflow-hidden;
+    border-top: 3px solid hsl(var(--accent-purple));
+  }
+
+  .corporate-card-amber {
+    @apply corporate-card relative overflow-hidden;
+    border-top: 3px solid hsl(var(--accent-amber));
+  }
+
+  .corporate-card-success {
+    @apply corporate-card relative overflow-hidden;
+    border-top: 3px solid hsl(var(--success));
+  }
+
+  /* Result Card - Destacado */
+  .corporate-card-result {
+    @apply bg-card rounded-md border-2 border-primary/20 p-6;
+    box-shadow: 0 4px 12px -2px hsl(var(--primary) / 0.1), 0 2px 6px -2px hsl(var(--primary) / 0.08);
+  }
+
+  /* Header - Simple como Payroll */
+  .corporate-header {
+    @apply bg-card border-b border-border;
+  }
+
+  .header-accent-line {
+    @apply h-0.5 w-full;
+    background: hsl(var(--accent-blue));
+  }
+
+  /* Section titles with colored icons */
+  .section-title {
+    @apply flex items-center gap-2 text-base font-semibold text-foreground mb-4;
+  }
+
+  .section-icon-blue {
+    @apply h-5 w-5;
+    color: hsl(var(--accent-blue));
+  }
+
+  .section-icon-teal {
+    @apply h-5 w-5;
+    color: hsl(var(--accent-teal));
+  }
+
+  .section-icon-purple {
+    @apply h-5 w-5;
+    color: hsl(var(--accent-purple));
+  }
+
+  .section-icon-amber {
+    @apply h-5 w-5;
+    color: hsl(var(--accent-amber));
+  }
+
+  .section-icon-success {
+    @apply h-5 w-5;
+    color: hsl(var(--success));
+  }
+
+  /* Result Stats */
+  .result-highlight {
+    @apply text-3xl font-bold text-primary;
+  }
+
+  .result-label {
+    @apply text-xs font-medium text-muted-foreground uppercase tracking-wider;
+  }
+
+  /* Result Stat Box */
+  .stat-box {
+    @apply text-center p-5 rounded-lg border;
+  }
+
+  .stat-box-primary {
+    @apply stat-box bg-primary/5 border-primary/20;
+  }
+
+  .stat-box-blue {
+    @apply stat-box;
+    background: hsl(var(--accent-blue-soft));
+    border-color: hsl(var(--accent-blue) / 0.2);
+  }
+
+  .stat-box-teal {
+    @apply stat-box;
+    background: hsl(var(--accent-teal-soft));
+    border-color: hsl(var(--accent-teal) / 0.2);
+  }
+
+  .stat-box-success {
+    @apply stat-box;
+    background: hsl(var(--success-soft));
+    border-color: hsl(var(--success) / 0.2);
+  }
+
+  .confidence-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .confidence-alta {
+    @apply bg-success/10 text-success;
+  }
+
+  .confidence-media {
+    @apply bg-info/10 text-info;
+  }
+
+  .info-box {
+    @apply rounded-md p-4 border-l-4;
+  }
+
+  .info-box-success {
+    @apply bg-success-soft border-success text-foreground;
+  }
+
+  .info-box-amber {
+    border-left-color: hsl(var(--accent-amber));
+    background: hsl(var(--accent-amber-soft));
+  }
+
+  /* Footer - Simple con línea superior */
+  .footer-corporate {
+    @apply text-sm text-muted-foreground py-3;
+    border-top: 1px solid hsl(var(--accent-blue) / 0.3);
+    background: hsl(var(--secondary));
+  }
+
+  /* List Item Bullet Colors */
+  .bullet-blue {
+    @apply w-2 h-2 rounded-full;
+    background: hsl(var(--accent-blue));
+  }
+
+  .bullet-teal {
+    @apply w-2 h-2 rounded-full;
+    background: hsl(var(--accent-teal));
+  }
+
+  .bullet-purple {
+    @apply w-2 h-2 rounded-full;
+    background: hsl(var(--accent-purple));
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
