@@ -27,37 +27,15 @@ st.set_page_config(
 )
 
 # CSS personalizado
-st.markdown("""
-<style>
-    .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 30px;
-        border-radius: 10px;
-        color: white;
-        margin-bottom: 30px;
-    }
-    .metric-card {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        border-left: 4px solid #667eea;
-    }
-    .warning-box {
-        background: #fff3cd;
-        padding: 15px;
-        border-radius: 5px;
-        border-left: 4px solid #ffc107;
-        margin: 10px 0;
-    }
-    .success-box {
-        background: #d4edda;
-        padding: 15px;
-        border-radius: 5px;
-        border-left: 4px solid #28a745;
-        margin: 10px 0;
-    }
-</style>
-""", unsafe_allow_html=True)
+def load_css():
+    css_path = Path(__file__).with_name("index.css")
+    if css_path.exists():
+        st.markdown(
+            f"<style>{css_path.read_text(encoding='utf-8')}</style>",
+            unsafe_allow_html=True
+        )
+
+load_css()
 
 # ============================================================
 # CLASE ESTIMADOR (copiada de la notebook)
@@ -238,8 +216,11 @@ estimador = cargar_estimador()
 # ============================================================
 
 st.markdown("""
-<div class="main-header">
-    <h1>🎯 Estimador de Esfuerzo - Payroll Diecisiete</h1>
+<div class="brand-bar">
+    <div class="brand-logo">PAYROLL</div>
+</div>
+<div class="page-title">
+    <h1>Estimador de Esfuerzo - Payroll Diecisiete</h1>
     <p>Sistema basado en estadísticas robustas + reglas de negocio calibradas</p>
 </div>
 """, unsafe_allow_html=True)
@@ -251,9 +232,19 @@ st.markdown("""
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.markdown('<div class="corporate-card">', unsafe_allow_html=True)
-
-    st.subheader("📄 Información del Bug")
+    st.markdown("""
+    <div class="card card-blue">
+        <div class="card-title">
+            <span class="icon icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M8 3h6l4 4v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+                    <path d="M14 3v5h5"/>
+                    <path d="M9 13h6M9 17h6"/>
+                </svg>
+            </span>
+            Información del Bug
+        </div>
+    """, unsafe_allow_html=True)
 
     # Cliente
     clientes = sorted(estimador.stats_cliente.keys())
@@ -274,9 +265,18 @@ with col1:
 
 
 with col2:
-    st.markdown('<div class="corporate-card">', unsafe_allow_html=True)
-
-    st.subheader("📝 Descripción Detallada")
+    st.markdown("""
+    <div class="card card-teal">
+        <div class="card-title">
+            <span class="icon icon-teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M4 4h16v16H4z"/>
+                    <path d="M8 8h8M8 12h8M8 16h6"/>
+                </svg>
+            </span>
+            Descripción Detallada
+        </div>
+    """, unsafe_allow_html=True)
 
     descripcion = st.text_area(
         "Descripción (opcional)",
@@ -285,18 +285,17 @@ with col2:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Botón estimar
-st.markdown("---")
+# Boton estimar
+st.markdown('<hr class="form-divider">', unsafe_allow_html=True)
 col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 3])
 
 with col_btn1:
-    btn_estimate = st.button("🔮 Estimar Esfuerzo", type="primary", use_container_width=True)
+    btn_estimate = st.button("Estimar Esfuerzo", type="primary", use_container_width=True)
 
 with col_btn2:
-    btn_clear = st.button("🔄 Limpiar", use_container_width=True)
-
+    btn_clear = st.button("Limpiar", use_container_width=True)
 # ============================================================
-# LÓGICA DE ESTIMACIÓN
+# LOGICA DE ESTIMACION
 # ============================================================
 
 if btn_clear:
@@ -304,111 +303,191 @@ if btn_clear:
 
 if btn_estimate:
     if not summary:
-        st.warning("⚠️ Por favor ingresa un resumen del bug")
+        st.warning("Por favor ingresa un resumen del bug")
     else:
         # Predecir
         pred = estimador.predecir(
             cliente=cliente,
             summary=summary,
-            description=description
+            description=descripcion
         )
-        
-        # Mostrar resultados
-        st.markdown("---")
-        st.subheader("📊 Resultado de la Estimación")
-        
-        # Métricas principales
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric(
-                label="Horas Estimadas",
-                value=f"{pred['horas_centrales']}h",
-                delta=None
-            )
-        
-        with col2:
-            st.metric(
-                label="Rango Mínimo",
-                value=f"{pred['intervalo_min']}h",
-                delta=None
-            )
-        
-        with col3:
-            st.metric(
-                label="Rango Máximo",
-                value=f"{pred['intervalo_max']}h",
-                delta=None
-            )
-        
-        with col4:
-            confianza_emoji = {
-                'Alta': '✅',
-                'Media': '⚠️',
-                'Baja': '❌'
-            }
-            st.metric(
-                label="Confianza",
-                value=f"{confianza_emoji.get(pred['confianza'], '')} {pred['confianza']}",
-                delta=None
-            )
-        
-        # Detalles
-        st.markdown("---")
+
+        confidence_class = "green" if pred['confianza'] == "Alta" else "blue" if pred['confianza'] == "Media" else "navy"
+
+        st.markdown(f"""
+        <div class="card card-result">
+            <div class="card-title">
+                <span class="icon icon-blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M4 19h16"/>
+                        <path d="M6 17V9"/>
+                        <path d="M12 17V5"/>
+                        <path d="M18 17v-7"/>
+                    </svg>
+                </span>
+                Resultado de la Estimación
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <span class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 7v5l3 3"/>
+                            </svg>
+                        </span>
+                        Horas estimadas
+                    </div>
+                    <div class="metric-value">{pred['horas_centrales']}h</div>
+                </div>
+                <div class="metric-card blue">
+                    <div class="metric-label">
+                        <span class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                                <path d="M12 19V5"/>
+                                <path d="M7 14l5 5 5-5"/>
+                            </svg>
+                        </span>
+                        Rango mínimo
+                    </div>
+                    <div class="metric-value blue">{pred['intervalo_min']}h</div>
+                </div>
+                <div class="metric-card teal">
+                    <div class="metric-label">
+                        <span class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                                <path d="M12 5v14"/>
+                                <path d="M7 10l5-5 5 5"/>
+                            </svg>
+                        </span>
+                        Rango máximo
+                    </div>
+                    <div class="metric-value teal">{pred['intervalo_max']}h</div>
+                </div>
+                <div class="metric-card green">
+                    <div class="metric-label">
+                        <span class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M8 12l3 3 5-5"/>
+                            </svg>
+                        </span>
+                        Confianza
+                    </div>
+                    <div class="metric-value {confidence_class}">{pred['confianza']}</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         col_det1, col_det2 = st.columns(2)
-        
+
         with col_det1:
-            st.markdown("### 📐 Cálculo")
             st.markdown(f"""
-            - **Método**: {pred['metodo']}
-            - **Base (mediana)**: {pred['base_sin_ajustar']}h
-            - **Después de ajustes**: {pred['horas_centrales']}h
-            - **Casos históricos**: {pred['casos_historicos']}
-            """)
-        
-        with col_det2:
-            st.markdown("### 🔍 Factores Considerados")
-            if pred['factores']:
-                for factor in pred['factores']:
-                    st.markdown(f"• {factor}")
-            else:
-                st.info("No se aplicaron ajustes adicionales")
-        
-        # Recomendaciones
-        st.markdown("---")
-        st.markdown("### 💡 Recomendaciones")
-        
-        if pred['confianza'] == 'Alta':
-            st.markdown(f"""
-            <div class="success-box">
-            ✅ <strong>Estimación confiable</strong> basada en {pred['casos_historicos']} casos históricos similares del cliente.
-            </div>
-            """, unsafe_allow_html=True)
-        elif pred['confianza'] == 'Media':
-            st.markdown("""
-            <div class="warning-box">
-            ⚠️ <strong>Estimación moderada</strong> - Considerar revisión con el equipo antes de comprometer.
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div class="warning-box">
-            ❌ <strong>Baja confianza</strong> - Cliente sin historial suficiente.<br>
-            Considerar spike técnico de 2-4h para análisis inicial.
-            </div>
-            """, unsafe_allow_html=True)
-        
-        if pred['horas_centrales'] > 12:
-            st.markdown("""
-            <div class="warning-box">
-            🚨 <strong>Bug complejo detectado</strong> - Considerar:<br>
-            • División en subtareas<br>
-            • Revisión técnica con senior<br>
-            • Validación de accesos/permisos con cliente
+            <div class="card card-purple">
+                <div class="card-title">
+                    <span class="icon icon-purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 17l6-6 4 4 6-6"/>
+                            <path d="M4 19h16"/>
+                        </svg>
+                    </span>
+                    Cálculo
+                </div>
+                <ul class="detail-list">
+                    <li><span class="bullet bullet-purple"></span><strong>Método:</strong> {pred['metodo']}</li>
+                    <li><span class="bullet bullet-purple"></span><strong>Base (mediana):</strong> {pred['base_sin_ajustar']}h</li>
+                    <li><span class="bullet bullet-purple"></span><strong>Después de ajustes:</strong> {pred['horas_centrales']}h</li>
+                    <li><span class="bullet bullet-purple"></span><strong>Casos históricos:</strong> {pred['casos_historicos']}</li>
+                </ul>
             </div>
             """, unsafe_allow_html=True)
 
-# ============================================================
+        with col_det2:
+            if pred['factores']:
+                factores_html = "".join(
+                    f'<li><span class="bullet bullet-amber"></span>{factor}</li>' for factor in pred['factores']
+                )
+                detalle_factores = f'<ul class="detail-list">{factores_html}</ul>'
+            else:
+                detalle_factores = '<div class="callout warning">No se aplicaron ajustes adicionales.</div>'
+
+            st.markdown(f"""
+            <div class="card card-amber">
+                <div class="card-title">
+                    <span class="icon icon-amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="M16.5 16.5L20 20"/>
+                        </svg>
+                    </span>
+                    Factores Considerados
+                </div>
+                {detalle_factores}
+            </div>
+            """, unsafe_allow_html=True)
+
+        if pred['confianza'] == 'Alta':
+            recomendacion_texto = f"Estimación confiable basada en {pred['casos_historicos']} casos historicos similares del cliente."
+            recomendacion_clase = "success"
+        elif pred['confianza'] == 'Media':
+            recomendacion_texto = "Estimación moderada. Considerar revisión con el equipo antes de comprometer."
+            recomendacion_clase = "warning"
+        else:
+            recomendacion_texto = "Baja confianza. Cliente sin historial suficiente. Considerar spike técnico de 2-4h para análisis inicial."
+            recomendacion_clase = "warning"
+
+        st.markdown(f"""
+        <div class="card card-success">
+            <div class="card-title">
+                <span class="icon icon-green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M9 18l6-6"/>
+                        <path d="M12 4a7 7 0 0 0-7 7c0 3.9 3.5 8 7 9 3.5-1 7-5.1 7-9a7 7 0 0 0-7-7z"/>
+                    </svg>
+                </span>
+                Recomendaciones
+            </div>
+            <div class="callout {recomendacion_clase}">
+                <span class="callout-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M8 12l3 3 5-5"/>
+                    </svg>
+                </span>
+                <div>{recomendacion_texto}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if pred['horas_centrales'] > 12:
+            st.markdown("""
+            <div class="card card-amber">
+                <div class="callout warning">
+                    <span class="callout-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                            <path d="M12 3l9 16H3z"/>
+                            <path d="M12 9v4"/>
+                            <path d="M12 17h.01"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <strong>Bug complejo detectado</strong> - Considerar:<br>
+                        Dividir en subtareas<br>
+                        Revisión técnica con senior<br>
+                        Validación de accesos/permisos con cliente
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+
+st.markdown("""
+<div class="footer">
+    <div>Copyright &copy;2026 Estimador de Esfuerzo - Payroll Diecisiete</div>
+    <div>update 21/01/2026, 09:58 hs</div>
+</div>
+""", unsafe_allow_html=True)
 # SIDEBAR: INFO Y ESTADÍSTICAS
 # ============================================================
 
