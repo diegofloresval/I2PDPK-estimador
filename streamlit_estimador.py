@@ -1,5 +1,5 @@
 """
-Estimador de Esfuerzo - Payroll Diecisiete
+Estimador de Esfuerzo - Payroll
 ==========================================
 App Streamlit para estimación de bugs
 
@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import re
+import json
 from scipy import stats
 from typing import Dict
 
@@ -20,8 +21,8 @@ from typing import Dict
 # ============================================================
 
 st.set_page_config(
-    page_title="Estimador Diecisiete",
-    page_icon="🎯",
+    page_title="Estimador Payroll",
+    page_icon="🕒",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -186,6 +187,80 @@ class EstimadorDiecisiete:
             'base_sin_ajustar': round(base * 4) / 4,
         }
 
+
+class EstimadorDiez:
+    """Estimador para Payroll Diez basado en config JSON."""
+
+    def __init__(self, config: Dict):
+        self.config = config
+        self.global_mediana = float(config.get("global", {}).get("mediana", 0.0))
+        self.global_mad = float(config.get("global", {}).get("mad", 0.0))
+        self.keywords = config.get("keywords", {})
+        self.clientes = config.get("clientes", {})
+        self.n_bugs = int(config.get("n_bugs", 0))
+
+    def _aplicar_keywords(self, texto: str) -> tuple:
+        texto_lower = texto.lower()
+        multiplicador = 1.0
+        factores = []
+
+        for keyword, factor in self.keywords.items():
+            try:
+                factor_val = float(factor)
+            except (TypeError, ValueError):
+                continue
+            if keyword.lower() in texto_lower:
+                multiplicador *= factor_val
+                pct = int(round((factor_val - 1) * 100))
+                nombre = str(keyword).replace("_", " ").title()
+                if pct != 0:
+                    factores.append(f"{nombre} (+{pct}%)")
+                else:
+                    factores.append(nombre)
+
+        return multiplicador, factores
+
+    def predecir(self, cliente: str, summary: str, description: str = "") -> Dict:
+        stats_cliente = self.clientes.get(cliente)
+
+        if stats_cliente:
+            base = float(stats_cliente.get("med", self.global_mediana))
+            mae = float(stats_cliente.get("mad", self.global_mad))
+            confianza = str(stats_cliente.get("conf", "Media"))
+            casos = int(stats_cliente.get("n", 0))
+            metodo = f"Mediana cliente ({casos} casos)" if casos else "Mediana cliente"
+        else:
+            base = self.global_mediana
+            mae = self.global_mad
+            confianza = "Baja"
+            casos = 0
+            metodo = "Mediana global (sin historial)"
+
+        texto_completo = f"{summary} {description}"
+        multiplicador, factores = self._aplicar_keywords(texto_completo)
+
+        pred_central = base * multiplicador
+        pred_min = max(0.5, pred_central - mae)
+        pred_max = pred_central + mae
+
+        pred_central = round(pred_central * 4) / 4
+        pred_min = round(pred_min * 4) / 4
+        pred_max = round(pred_max * 4) / 4
+
+        if confianza.lower() not in ("alta", "media"):
+            factores.append("Cliente sin historial - rango amplio")
+
+        return {
+            'horas_centrales': pred_central,
+            'intervalo_min': pred_min,
+            'intervalo_max': pred_max,
+            'confianza': confianza,
+            'factores': factores,
+            'metodo': metodo,
+            'casos_historicos': casos,
+            'base_sin_ajustar': round(base * 4) / 4,
+        }
+
 # ============================================================
 # CARGAR MODELO
 # ============================================================
@@ -209,7 +284,29 @@ def cargar_estimador():
         st.error(f"❌ Error: {str(e)}")
         st.stop()
 
-estimador = cargar_estimador()
+estimador_diecisiete = cargar_estimador()
+
+@st.cache_resource
+def cargar_estimador_diez():
+    """Carga el estimador de Payroll Diez desde config JSON."""
+    try:
+        config_candidates = [
+            Path("modelo_diez_config.json"),
+            Path("modelo_diez_config (2).json"),
+        ]
+        config_path = next((path for path in config_candidates if path.exists()), None)
+        if not config_path:
+            st.error("Archivo modelo_diez_config.json no encontrado")
+            st.stop()
+        with config_path.open("r", encoding="utf-8") as handle:
+            config = json.load(handle)
+        return EstimadorDiez(config)
+    except Exception as e:
+        st.error(f"Error al cargar modelo Diez: {str(e)}")
+        st.stop()
+
+estimador_diez = cargar_estimador_diez()
+
 
 # ============================================================
 # HEADER
@@ -220,7 +317,7 @@ st.markdown("""
     <div class="brand-logo">PAYROLL</div>
 </div>
 <div class="page-title">
-    <h1>Estimador de Esfuerzo - Payroll Diecisiete</h1>
+    <h1>Estimador de Esfuerzo - Payroll</h1>
     <p>Sistema basado en estadísticas robustas + reglas de negocio calibradas</p>
 </div>
 """, unsafe_allow_html=True)
@@ -228,6 +325,8 @@ st.markdown("""
 # ============================================================
 # FORMULARIO
 # ============================================================
+
+estimador_activo = estimador_diecisiete
 
 col1, col2 = st.columns([1, 1])
 
@@ -246,8 +345,20 @@ with col1:
         </div>
     """, unsafe_allow_html=True)
 
+    producto = st.selectbox(
+        "Producto *",
+        options=["Payroll Diecisiete", "Payroll Diez"],
+        help="Selecciona el producto"
+    )
+
+    if producto == "Payroll Diez":
+        estimador_activo = estimador_diez
+        clientes = sorted(estimador_diez.clientes.keys())
+    else:
+        estimador_activo = estimador_diecisiete
+        clientes = sorted(estimador_diecisiete.stats_cliente.keys())
+
     # Cliente
-    clientes = sorted(estimador.stats_cliente.keys())
     cliente = st.selectbox(
         "Cliente *",
         options=clientes,
@@ -306,7 +417,7 @@ if btn_estimate:
         st.warning("Por favor ingresa un resumen del bug")
     else:
         # Predecir
-        pred = estimador.predecir(
+        pred = estimador_activo.predecir(
             cliente=cliente,
             summary=summary,
             description=descripcion
@@ -484,7 +595,7 @@ if btn_estimate:
 
 st.markdown("""
 <div class="footer">
-    <div>Copyright &copy;2026 Estimador de Esfuerzo - Payroll Diecisiete</div>
+    <div>Copyright &copy;2026 Estimador de Esfuerzo - Payroll</div>
     <div>update 21/01/2026, 09:58 hs</div>
 </div>
 """, unsafe_allow_html=True)
@@ -493,32 +604,44 @@ st.markdown("""
 
 with st.sidebar:
     st.header("ℹ️ Información")
-    
-    st.markdown("""
-    ### Cómo funciona
-    
-    El sistema estima el esfuerzo usando:
-    
-    1. **Base estadística**: Mediana histórica del cliente
-    2. **Reglas de negocio**: Ajustes por keywords (IRPF, licencias, masivo, etc.)
-    3. **Intervalos**: MAE específico por cliente
-    
-    ### Precisión
-    
-    - MAE: ~3.5h
-    - 65% predicciones dentro de ±5h
-    - Basado en 128 casos históricos
-    
-    ### Clientes
-    """)
-    
-    # Mostrar stats por cliente
-    for cli, stats in estimador.stats_cliente.items():
-        if stats:
-            st.markdown(f"""
-            **{cli}**  
-            Mediana: {stats['median']:.1f}h | Casos: {stats['count']}
-            """)
+
+    if producto == "Payroll Diez":
+        precision_label = "MAD"
+        precision_value = estimador_diez.global_mad
+        total_casos = estimador_diez.n_bugs
+        keywords_ejemplo = "recibos"
+    else:
+        precision_label = "MAE"
+        precision_value = estimador_diecisiete.global_mae
+        total_casos = len(estimador_diecisiete.df_historico)
+        keywords_ejemplo = "IRPF, licencias, masivo"
+
+    st.markdown(f"""
+    <div class="sidebar-section">
+      <h4>Pasos</h4>
+      <ol class="sidebar-list">
+        <li>Seleccionar <strong>producto</strong>.</li>
+        <li>Seleccionar <strong>cliente</strong>.</li>
+        <li>Completar <strong>resumen</strong> y <strong>descripción</strong>.</li>
+      </ol>
+      <div class="sidebar-note">Tip: un resumen claro mejora la precisión.</div>
+    </div>
+    <div class="sidebar-section">
+      <h4>Cómo funciona</h4>
+      <ul class="sidebar-list">
+        <li><strong>Baseline</strong>: mediana histórica por cliente.</li>
+        <li><strong>Reglas</strong>: ajustes por keywords ({keywords_ejemplo},etc).</li>
+        <li><strong>Intervalos</strong>: variabilidad histórica por cliente.</li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <h4>Precisión</h4>
+      <div class="sidebar-kpi">
+        <span>{precision_label}: ~{precision_value:.1f}h</span>
+        <span>Casos: {total_casos}</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     st.markdown("""

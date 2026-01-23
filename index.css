@@ -348,6 +348,44 @@ label [data-testid="stTooltipIcon"] {
   margin-top: 1px;
 }
 
+.sidebar-section {
+  margin-bottom: 16px;
+}
+
+.sidebar-section h4 {
+  font-size: 14px;
+  margin: 14px 0 8px;
+}
+
+.sidebar-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sidebar-kpi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sidebar-kpi span {
+  background: #eef3ff;
+  border: 1px solid rgba(47, 111, 246, 0.18);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.sidebar-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
 @media (max-width: 900px) {
   .metrics-grid {
     grid-template-columns: 1fr;
